@@ -13,6 +13,7 @@ import os
 import cv2 as cv
 import numpy as np
 
+
 def readImage(filename):
     return cv.imread(filename, cv.IMREAD_GRAYSCALE)
 
@@ -78,7 +79,28 @@ def findHomography(kp1, kp2, matches):
     _, _, vh = np.linalg.svd(A)
     h = vh[-1, :].reshape((3, 3))
 
+    # Compute Average residual
+    residual = getAverageResidual(bestInliers1, bestInliers2, h)
+    print(f" Average residual : {residual}")
+
     return h
+
+
+def getAverageResidual(kp1, kp2, h):
+    """
+    Computes the average residual corresponding to the input
+    homography matrx.
+    """
+    kp1_coordinates = np.array([[kp.pt[0], kp.pt[1], 1] for kp in kp1])
+    kp2_coordinates = np.array([list(kp.pt) for kp in kp2])
+
+    prediction = kp1_coordinates @ h
+    # Normalize coordinates [x, y, alpha] => [x, y, 1]
+    prediction = prediction / prediction[:, 2][:, None]
+    prediction = prediction[:, :2]
+    dist = np.linalg.norm(prediction - kp2_coordinates, axis=1)
+    residual = np.mean(dist)
+    return residual
 
 
 def getInliers(kp1, kp2, h):
@@ -96,6 +118,7 @@ def getInliers(kp1, kp2, h):
     dist = np.linalg.norm(prediction - kp2_coordinates, axis=1)
     inliersIds = np.argwhere(dist < INLIER_DIST_THRESHOLD).flatten()
     return kp1[inliersIds], kp2[inliersIds]
+
 
 def warpImages(img1, img2, h):
     height1, width1 = img1.shape
