@@ -35,7 +35,7 @@ def getConstraint(a: cv.KeyPoint, b: cv.KeyPoint):
     return A
 
 
-def findHomography(img1, img2, kp1, kp2, matches):
+def findHomography(kp1, kp2, matches):
     """
     Computes the homography matrix using RANSAC.
     """
@@ -185,7 +185,7 @@ def stitch(img1, img2):
     matches = getTopMatches(distances, n)
 
     print(" Computing homography")
-    h = findHomography(img1, img2, kp1, kp2, matches)
+    h = findHomography(kp1, kp2, matches)
 
     print(" Warping images")
     stitched = warpImages(img1, img2, h)
