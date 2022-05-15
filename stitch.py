@@ -6,13 +6,12 @@
 # Adel Abbas, csdp1270
 #
 # Run:
-#   python stitch.py
+#   python3 stitch.py
 # ---------------------------------
 
 import os
 import cv2 as cv
 import numpy as np
-
 
 def readImage(filename):
     return cv.imread(filename, cv.IMREAD_GRAYSCALE)
@@ -36,7 +35,7 @@ def getConstraint(a: cv.KeyPoint, b: cv.KeyPoint):
     return A
 
 
-def findHomography(kp1, kp2, matches):
+def findHomography(img1, img2, kp1, kp2, matches):
     """
     Computes the homography matrix using RANSAC.
     """
@@ -65,6 +64,7 @@ def findHomography(kp1, kp2, matches):
         inliers1, inliers2 = getInliers(
             np.array(kp1)[matchIds1], np.array(kp2)[matchIds2], h)
         count = len(inliers1)
+
         if count >= maxInliersCount:
             maxInliersCount = count
             bestInliers1 = inliers1
@@ -96,7 +96,6 @@ def getInliers(kp1, kp2, h):
     dist = np.linalg.norm(prediction - kp2_coordinates, axis=1)
     inliersIds = np.argwhere(dist < THRESHOLD).flatten()
     return kp1[inliersIds], kp2[inliersIds]
-
 
 def warpImages(img1, img2, h):
     height1, width1 = img1.shape
@@ -186,7 +185,7 @@ def stitch(img1, img2):
     matches = getTopMatches(distances, n)
 
     print(" Computing homography")
-    h = findHomography(kp1, kp2, matches)
+    h = findHomography(img1, img2, kp1, kp2, matches)
 
     print(" Warping images")
     stitched = warpImages(img1, img2, h)
@@ -199,7 +198,7 @@ def process(filename, filename2, data="./", out="./"):
     img1 = readImage(os.path.join(data, filename))
     img2 = readImage(os.path.join(data, filename2))
     res = stitch(img1, img2)
-    writeImage(res, os.path.join(out, "stich.jpg"))
+    writeImage(res, os.path.join(out, "stitch.jpg"))
     return None
 
 
@@ -208,7 +207,10 @@ def main():
     OUT = "./out"
     filename = "uttower_left.JPG"
     filename2 = "uttower_right.JPG"
+    #filename = "1.JPG"
+    #filename2 = "2.JPG"
     process(filename, filename2, data=DIR, out=OUT)
+
     return None
 
 
