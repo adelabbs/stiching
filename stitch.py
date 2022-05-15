@@ -2,8 +2,11 @@
 
 # ---------------------------------
 # CS472 - Assignment 4
-# Date: 11/05/2022
+# Date: 15/05/2022
 # Adel Abbas, csdp1270
+#
+# Run:
+#   python stitch.py
 # ---------------------------------
 
 import os
