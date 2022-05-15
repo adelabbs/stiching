@@ -80,6 +80,7 @@ def findHomography(kp1, kp2, matches):
     h = vh[-1, :].reshape((3, 3))
 
     # Compute Average residual
+    print(f" Number of inliers : {maxInliersCount}")
     residual = getAverageResidual(bestInliers1, bestInliers2, h)
     print(f" Average residual : {residual}")
 
@@ -98,7 +99,7 @@ def getAverageResidual(kp1, kp2, h):
     # Normalize coordinates [x, y, alpha] => [x, y, 1]
     prediction = prediction / prediction[:, 2][:, None]
     prediction = prediction[:, :2]
-    dist = np.linalg.norm(prediction - kp2_coordinates, axis=1)
+    dist = np.linalg.norm(prediction - kp2_coordinates, axis=1)**2
     residual = np.mean(dist)
     return residual
 
