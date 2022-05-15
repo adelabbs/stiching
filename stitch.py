@@ -85,7 +85,7 @@ def getInliers(kp1, kp2, h):
     """
     Finds the inlier key points pairs.
     """
-    THRESHOLD = 600
+    INLIER_DIST_THRESHOLD = 600
     kp1_coordinates = np.array([[kp.pt[0], kp.pt[1], 1] for kp in kp1])
     kp2_coordinates = np.array([list(kp.pt) for kp in kp2])
 
@@ -94,17 +94,19 @@ def getInliers(kp1, kp2, h):
     prediction = prediction / prediction[:, 2][:, None]
     prediction = prediction[:, :2]
     dist = np.linalg.norm(prediction - kp2_coordinates, axis=1)
-    inliersIds = np.argwhere(dist < THRESHOLD).flatten()
+    inliersIds = np.argwhere(dist < INLIER_DIST_THRESHOLD).flatten()
     return kp1[inliersIds], kp2[inliersIds]
 
 def warpImages(img1, img2, h):
     height1, width1 = img1.shape
     height2, width2 = img2.shape
-    # Find the corners of the new images
+    # Find the corners of the new image
+    # Define the corners of both input images
     srcImageCorners = np.array([[0, 0],
                                 [0, height1],
                                 [width1, height1],
                                 [width1, 0]], dtype=np.float64)
+    # Reshape to match opencv's perspectiveTransform input format
     srcImageCorners = srcImageCorners.reshape(-1, 1, 2)
 
     destImageCorners = np.array([[0, 0],
@@ -147,8 +149,7 @@ def getTopMatches(distances, n):
     relatively large matrix.
     """
     width = distances.shape[1]
-    flat = distances.flatten()
-    topN = flat.argsort()[:n]
+    topN = distances.flatten().argsort()[:n]
     matches = np.zeros((n, 2), dtype=int)
     for k, i in enumerate(topN):
         x = i % width
